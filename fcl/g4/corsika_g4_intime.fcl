@@ -82,3 +82,5 @@ outputs:
 physics.producers.larg4outtime.KeepParticlesInVolumes: ["volCryostat"]
 physics.producers.larg4outtime.InputLabels: [ "GenInTimeSorter:outtime" ]
 
+services.SpaceCharge.EnableSimSpatialSCE: true
+services.SpaceCharge.EnableSimEfieldSCE: true
