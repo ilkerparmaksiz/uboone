@@ -77,7 +77,7 @@ outputs:
 # MCC7 compatibility.
 
 physics.producers.daq.GenNoise: 1
-services.SignalShapingServiceMicroBooNE.NConfigs: 2
+services.ElectronicsCalibService.ElectronicsCalibProvider.UseDB: true
 services.SignalShapingServiceMicroBooNE.StretchFullResponse: true
 services.SignalShapingServiceMicroBooNE.FieldResponseFVersion: [ "v0.1", "v0.1"]
 services.SignalShapingServiceMicroBooNE.YZdependentResponse: false
