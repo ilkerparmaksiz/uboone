@@ -108,9 +108,9 @@ microboone_electronicscalib_provider:
     UseDB: false
     UseFile: false
     
-    DefaultGain:           13.0
+    DefaultGain:           14.0
     DefaultGainErr:        0.0
-    DefaultShapingTime:    1.5
+    DefaultShapingTime:    2.0
     DefaultShapingTimeErr: 0.0
 }
 microboone_electronicscalib_provider.DatabaseRetrievalAlg.DBFolderName: "electronicscalib_data"

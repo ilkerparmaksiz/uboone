@@ -38,7 +38,7 @@ microboone_reco_mcc7_services.DetectorClocksService.InheritClockConfig:         
 microboone_reco_mcc7_services.DetectorClocksService.TriggerOffsetTPC:             -0.400e3
 
 microboone_reco_mcc7_services.SignalShapingServiceMicroBooNE.StretchFullResponse: true
-microboone_reco_mcc7_services.SignalShapingServiceMicroBooNE.NConfigs:            2
+microboone_reco_mcc7_services.ElectronicsCalibService.ElectronicsCalibProvider.UseDB: true
 microboone_reco_mcc7_services.SignalShapingServiceMicroBooNE.FilterFuncVec: [ "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))", "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))", "(x>0.0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[4])"]
 microboone_reco_mcc7_services.SignalShapingServiceMicroBooNE.FilterParamsVec: [ [ 1.8034, 1.69, 1.55, 0.19, 3.75], [ 1.84903, 1.46, 1.33, 0.23, 4.89], [ 1.03452, 0.08, 0.15, 0, 2.17]]
 microboone_reco_mcc7_services.SignalShapingServiceMicroBooNE.FilterWidthCorrectionFactor: [ 1, 1, 1]
