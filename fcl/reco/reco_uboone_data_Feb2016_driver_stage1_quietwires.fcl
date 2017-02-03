@@ -2,4 +2,5 @@
 
 process_name: DataApr2016RecoStage1
 
-services.SignalShapingServiceMicroBooNE.NConfigs:            2
+#now use DB to get quiet wires
+services.ElectronicsCalibService.ElectronicsCalibProvider.UseDB: true

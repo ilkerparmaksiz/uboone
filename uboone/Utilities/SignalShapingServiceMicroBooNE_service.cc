@@ -17,6 +17,8 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/LArFFT.h"
+#include "larevt/CalibrationDBI/Interface/ElectronicsCalibService.h"
+#include "larevt/CalibrationDBI/Interface/ElectronicsCalibProvider.h"
 #include "TFile.h"
 
 #include <fstream>
@@ -83,42 +85,9 @@ void util::SignalShapingServiceMicroBooNE::reconfigure(const fhicl::ParameterSet
 //    std::cout << std::endl;
 //  }
 
-  fNConfigs = pset.get<size_t>("NConfigs");
-  std::cout << fNConfigs << " TPC ASIC configs are activated" << std::endl;
-  //std::cout << "init flag " << fInitConfigMap << std::endl;
 
-  if(fNConfigs>1 && !fInitConfigMap) {
-
-    fConfigMap.clear();
-    std::ifstream configList;
-
-    std::string fname;
-    cet::search_path sp("FW_SEARCH_PATH");
-    sp.find_file("quietWires.txt", fname);
-
-    configList.open(fname, std::ios::in);
-//    if(!configList.isOpen() {
-//      std::cout << "file quietWires.txt not found" << std::endl;
-//    }
-
-    while(!configList.eof()) {
-      size_t item = 10000;
-      size_t config;
-      configList >> item >> config;
-      if (item==10000) break;
-      fConfigMap[item] = config;
-      //std::cout << item << " " << config << std::endl;
-    }
-    fInitConfigMap = true;
-    std::cout << fConfigMap.size() << " channels read in" << std::endl;
-
-    // now find first and last to speed up search
-    if(fConfigMap.size()) {
-      fConfigMapFirstChannel = fConfigMap.begin()->first;
-      fConfigMapLastChannel  = fConfigMap.rbegin()->first;
-    }
-    std::cout << "Config map first/last channels: " << fConfigMapFirstChannel << " " << fConfigMapLastChannel << std::endl;
-  }
+  //two configs - misconfigured and not
+  fNConfigs = 2;
 
   fASICGainInMVPerFC    = pset.get< DoubleVec2 >("ASICGainInMVPerFC");
 
@@ -615,6 +584,27 @@ void util::SignalShapingServiceMicroBooNE::init()
 {
   if(!fInit) {
     fInit = true;
+
+    //first set misconfigured asic information
+    //Due to structure of this code, all events processed in a job will use the 
+    //misconfigured channel status of the first event (because init() is only called 
+    //once, presumably for the first event)
+    art::ServiceHandle<geo::Geometry> geo;
+    if (!fInitConfigMap) {
+      const size_t N_CHANNELS = geo->Nchannels();
+      const lariov::ElectronicsCalibProvider& elec_provider = art::ServiceHandle<lariov::ElectronicsCalibService>()->GetProvider();
+      for (unsigned int channel=0; channel!= N_CHANNELS; ++channel) {
+	if (elec_provider.ExtraInfo(channel).GetBoolData("is_misconfigured")) {
+	  fConfigMap[channel] = 1;
+	}
+      }
+      fInitConfigMap = true;
+
+      if(fConfigMap.size()) {
+	fConfigMapFirstChannel = fConfigMap.begin()->first;
+	fConfigMapLastChannel  = fConfigMap.rbegin()->first;
+      }
+    }
 
     // Do microboone-specific configuration of SignalShaping by providing
     // microboone response and filter functions.
@@ -1501,6 +1491,9 @@ void util::SignalShapingServiceMicroBooNE::SetResponseSampling(size_t ktype, siz
 //-----Give Gain Settings to SimWire-----//jyoti
 double util::SignalShapingServiceMicroBooNE::GetASICGain(unsigned int const channel) const
 {
+  if(!fInit)
+    init();
+
   art::ServiceHandle<geo::Geometry> geom;
   geo::View_t view = geom->View(channel);
   double gain = 0;
@@ -1525,6 +1518,9 @@ double util::SignalShapingServiceMicroBooNE::GetASICGain(unsigned int const chan
 //-----Give Shaping time to SimWire-----//jyoti
 double util::SignalShapingServiceMicroBooNE::GetShapingTime(unsigned int const channel) const
 {
+  if(!fInit)
+    init();
+
   art::ServiceHandle<geo::Geometry> geom;
   geo::View_t view = geom->View(channel);
 
@@ -1549,6 +1545,9 @@ double util::SignalShapingServiceMicroBooNE::GetShapingTime(unsigned int const c
 
 double util::SignalShapingServiceMicroBooNE::GetRawNoise(unsigned int const channel) const
 {
+  if(!fInit)
+    init();
+
   unsigned int plane;
   art::ServiceHandle<geo::Geometry> geom;
   geo::View_t view = geom->View(channel);
@@ -1591,6 +1590,9 @@ double util::SignalShapingServiceMicroBooNE::GetRawNoise(unsigned int const chan
 
 double util::SignalShapingServiceMicroBooNE::GetDeconNoise(unsigned int const channel) const
 {
+  if(!fInit)
+    init();
+
   unsigned int plane;
   art::ServiceHandle<geo::Geometry> geom;
   geo::View_t view = geom->View(channel);

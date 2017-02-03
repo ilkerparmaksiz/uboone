@@ -3,9 +3,6 @@ BEGIN_PROLOG
 microboone_signalshapingservice:
 {
 
-  NConfigs:  1  # if set to 1, you get the same config for all channels
-                # otherwise, you need to supply the map of channel <-> config... see GetConfig()
-
   ADCPerPCAtLowestASICGain: 9390 #ADC/pC
   # ASICGains:           [4.7, 7.8, 14, 25] #Default: 7.8
   #mV/fC for different configs and U, V & Y planes
