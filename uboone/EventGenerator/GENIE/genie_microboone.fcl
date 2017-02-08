@@ -21,12 +21,20 @@ microboone_genie_simple.EventsPerSpill:    0
 microboone_genie_simple.POTPerSpill:       5e12
 
 microboone_genie_uniform_flux:               @local::standard_genie_uniform_flux
+microboone_genie_uniform_flux.FluxType:      "function"
+microboone_genie_uniform_flux.FunctionalFlux:"x"
+microboone_genie_uniform_flux.FluxEmin:      500
+microboone_genie_uniform_flux.FluxEmax:      600
 microboone_genie_uniform_flux.BeamCenter:    [1.25, 0., 0.]  
 microboone_genie_uniform_flux.BeamDirection: [0., 0., 1.]    
 microboone_genie_uniform_flux.BeamRadius:    1.9 
 #microboone_genie_uniform_flux.FiducialCut:   "mzcyl:(125., 0.),10.,100.,200."
 
 microboone_genie_uniform_flux_nc:               @local::standard_genie_uniform_flux_nc
+microboone_genie_uniform_flux_nc.FluxType:      "function"
+microboone_genie_uniform_flux_nc.FunctionalFlux:"x"
+microboone_genie_uniform_flux_nc.FluxEmin:      500
+microboone_genie_uniform_flux_nc.FluxEmax:      600
 microboone_genie_uniform_flux_nc.BeamCenter:    [1.25, 0., 0.]  
 microboone_genie_uniform_flux_nc.BeamDirection: [0., 0., 1.]    
 microboone_genie_uniform_flux_nc.BeamRadius:    0.2 
@@ -34,6 +42,10 @@ microboone_genie_uniform_flux_nc.FiducialCut:   "mzcyl:(125., 0.),10.,100.,200."
 microboone_genie_uniform_flux_nc.GeomScan:      "flux: 10000 1.1"
 
 microboone_genie_uniform_flux_cc:               @local::standard_genie_uniform_flux_cc
+microboone_genie_uniform_flux_cc.FluxType:      "function"
+microboone_genie_uniform_flux_cc.FunctionalFlux:"x"
+microboone_genie_uniform_flux_cc.FluxEmin:      500
+microboone_genie_uniform_flux_cc.FluxEmax:      600
 microboone_genie_uniform_flux_cc.BeamCenter:    [1.25, 0., 0.]  
 microboone_genie_uniform_flux_cc.BeamDirection: [0., 0., 1.]    
 microboone_genie_uniform_flux_cc.BeamRadius:    0.2 
