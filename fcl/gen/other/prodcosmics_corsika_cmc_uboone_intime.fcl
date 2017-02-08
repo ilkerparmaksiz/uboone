@@ -123,5 +123,7 @@ physics.producers.generator.ShowerFluxConstants:  [ 9.72e1, 1.45e2, 2.07e2, 4.02
 physics.producers.larg4intime.KeepParticlesInVolumes: ["volCryostat"]
 physics.producers.larg4intime.InputLabels: [ "GenInTimeSorter:intime" ]
 
+services.SpaceCharge.EnableSimSpatialSCE: true
+services.SpaceCharge.EnableSimEfieldSCE: true
 
 
