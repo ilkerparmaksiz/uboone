@@ -23,9 +23,27 @@ T0RecoAnodeCathodePiercing: {
 T0RecoAnodeCathodePiercing_mc : @local::T0RecoAnodeCathodePiercing
 T0RecoAnodeCathodePiercing_mc.RecoT0TimeOffsetA: -0.53
 T0RecoAnodeCathodePiercing_mc.RecoT0TimeOffsetC: 9.97
+T0RecoAnodeCathodePiercing_mc.TimeResA: 5
+T0RecoAnodeCathodePiercing_mc.TimeResC: 2
 
 T0RecoAnodeCathodePiercing_reco : @local::T0RecoAnodeCathodePiercing
 T0RecoAnodeCathodePiercing_reco.RecoT0TimeOffsetA: 3.4
 T0RecoAnodeCathodePiercing_reco.RecoT0TimeOffsetC: -14.0
+T0RecoAnodeCathodePiercing_reco.TimeResA: 5
+T0RecoAnodeCathodePiercing_reco.TimeResC: 2
+
+T0RecoAnodeCathodePiercing_mc_beamgate : @local::T0RecoAnodeCathodePiercing
+T0RecoAnodeCathodePiercing_mc_beamgate.RecoT0TimeOffsetA: -0.53
+T0RecoAnodeCathodePiercing_mc_beamgate.RecoT0TimeOffsetC: 9.97
+T0RecoAnodeCathodePiercing_mc_beamgate.FlashProducer: "simpleFlashBeam"
+T0RecoAnodeCathodePiercing_mc_beamgate.TimeResA: 5
+T0RecoAnodeCathodePiercing_mc_beamgate.TimeResC: 5
+
+T0RecoAnodeCathodePiercing_reco_beamgate : @local::T0RecoAnodeCathodePiercing
+T0RecoAnodeCathodePiercing_reco_beamgate.RecoT0TimeOffsetA: 3.4
+T0RecoAnodeCathodePiercing_reco_beamgate.RecoT0TimeOffsetC: -14.0
+T0RecoAnodeCathodePiercing_reco_beamgate.FlashProducer: "simpleFlashBeam"
+T0RecoAnodeCathodePiercing_reco_beamgate.TimeResA: 5
+T0RecoAnodeCathodePiercing_reco_beamgate.TimeResC: 5
 
 END_PROLOG

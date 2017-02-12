@@ -5,6 +5,8 @@ T0RecoAnodeCathodePiercingAna: {
  TrackProducer     : "pandoraCosmic"
  FlashProducer     : "t0reco"
  T0Producer        : "t0reco"
+ CaloProducer      : "pandoraCosmiccalo"
+ HitProducer       : "pandoraCosmic"
  CosmicTagProducer : "pandoraCosmicKHittag"
  UseMC             : true
  Resolution        : 10
