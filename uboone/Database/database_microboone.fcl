@@ -91,7 +91,7 @@ microboone_pmtgain_provider:
 }
 microboone_pmtgain_provider.DatabaseRetrievalAlg.DBFolderName: "pmtgains_data"
 microboone_pmtgain_provider.DatabaseRetrievalAlg.DBUrl: "http://dbdata0vm.fnal.gov:8086/uboonecon_dev/app/"
-microboone_pmtgain_provider.DatabaseRetrievalAlg.DBTag: "v1r0"
+microboone_pmtgain_provider.DatabaseRetrievalAlg.DBTag: "v1r1"
 
 microboone_pmtgain_service:
 {
