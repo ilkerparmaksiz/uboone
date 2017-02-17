@@ -404,7 +404,7 @@ microboone_reco_mcc8_producers.caldata.NumSigma:                                
 microboone_reco_mcc8_producers.caldata.DodQdxCalib:                              false
 
 microboone_reco_mcc8_producers.gaushit.CalDataModuleLabel:                       "caldata"
-microboone_reco_mcc8_producers.gaushit.MinSig:                                   [3.25, 3.25, 3.75]
+microboone_reco_mcc8_producers.gaushit.MinSig:                                   [3.25, 4.0, 3.75]
 microboone_reco_mcc8_producers.gaushit.MinWidth:                                 [1.0,  1.0,  1.0]
 microboone_reco_mcc8_producers.gaushit.MaxMultiHit:                              6
 microboone_reco_mcc8_producers.gaushit.TryNplus1Fits:                            false
