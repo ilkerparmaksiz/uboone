@@ -5537,6 +5537,20 @@ void microboone::AnalysisTree::analyze(const art::Event& evt)
           unsigned int opdet = geom->OpDetFromOpChannel(opch);
           FlashData.flsPePerOpDet[i][opdet] = pePerOpChannel;
         }
+
+        // Now be dragons. simpleFlash always saves PEs per OpDet in a 32 position array
+        // while opFlash in an n position one, depending on beam or cosmic opChannels
+        // So in the case of opflashCosmic we need to look at cosmic discriminator channels
+        // I know this is terrible, but I don't see a better way to do it now, but to go back
+        // and have a better recob::OpFlash data product definition. --mdeltutt
+        if (fOpFlashModuleLabel[iFlashAlg].find("opflashCosmic") != std::string::npos) {
+          for (int opch = 200; opch < 200+kNOpDets; opch++) {
+            Double_t pePerOpChannel = (Double_t) flashlist[iFlashAlg][i]->PE(opch);
+            unsigned int opdet = geom->OpDetFromOpChannel(opch);
+            FlashData.flsPePerOpDet[i][opdet] = pePerOpChannel;
+          }
+        }
+
       }
     }
   } // if fSaveFlashInfo
