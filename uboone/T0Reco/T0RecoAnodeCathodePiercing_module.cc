@@ -93,6 +93,11 @@ private:
   // time-adjustment (us) to align reconstructed T0 for Anode and Cathode-crossing tracks to reconstructed flash-times
   double fRecoT0TimeOffsetA, fRecoT0TimeOffsetC;
 
+  // time-bounds for ADC truncation peak removal (negative)
+  double fT0negMin, fT0negMax;
+  // (positive pek)
+  double fT0posMin, fT0posMax;
+
   // functions to be used throughout module
   bool   TrackEntersTop     (const std::vector<TVector3>& sorted_trk);
   bool   TrackEntersAnode   (const std::vector<TVector3>& sorted_trk);
@@ -129,6 +134,10 @@ T0RecoAnodeCathodePiercing::T0RecoAnodeCathodePiercing(fhicl::ParameterSet const
   fTimeResC          = p.get<double>     ("TimeResC");
   fRecoT0TimeOffsetA = p.get<double>     ("RecoT0TimeOffsetA");
   fRecoT0TimeOffsetC = p.get<double>     ("RecoT0TimeOffsetC");
+  fT0negMin          = p.get<double>     ("T0negMin");
+  fT0negMax          = p.get<double>     ("T0negMax");
+  fT0posMin          = p.get<double>     ("T0posMin");
+  fT0posMax          = p.get<double>     ("T0posMax");
   fPEmin             = p.get<double>     ("PEmin");
   top2side           = p.get<bool>       ("top2side");
   side2bottom        = p.get<bool>       ("side2bottom");
@@ -156,8 +165,7 @@ T0RecoAnodeCathodePiercing::T0RecoAnodeCathodePiercing(fhicl::ParameterSet const
 void T0RecoAnodeCathodePiercing::produce(art::Event & e)
 {
 
-  if (_debug)
-  std::cout << "NEW EVENT" << std::endl;
+  if (_debug) { std::cout << "NEW EVENT" << std::endl; }
 
   _flash_times.clear();
   _flash_idx_v.clear();
@@ -168,6 +176,7 @@ void T0RecoAnodeCathodePiercing::produce(art::Event & e)
   std::unique_ptr< art::Assns <recob::Track, recob::OpFlash> > trk_flash_assn_v( new art::Assns<recob::Track, recob::OpFlash> );
 
   // load Flash
+  if (_debug) { std::cout << "loading flash from producer " << fFlashProducer << std::endl; }
   art::Handle<std::vector<recob::OpFlash> > flash_h;
   e.getByLabel(fFlashProducer,flash_h);
 
@@ -178,6 +187,7 @@ void T0RecoAnodeCathodePiercing::produce(art::Event & e)
   }
 
   // load tracks previously created for which T0 reconstruction should occur
+  if (_debug) { std::cout << "loading track from producer " << fTrackProducer << std::endl; }
   art::Handle<std::vector<recob::Track> > track_h;
   e.getByLabel(fTrackProducer,track_h);
 
@@ -197,12 +207,12 @@ void T0RecoAnodeCathodePiercing::produce(art::Event & e)
     if (flash.TotalPE() > fPEmin){
       _flash_times.push_back( flash.Time() );
       _flash_idx_v.push_back(flash_ctr);
+      if (_debug) { std::cout << "\t flash time : " << flash.Time() << ", PE : " << flash.TotalPE() << std::endl; }
     }
     flash_ctr += 1;
   }// for all flashes
 
-  if (_debug)
-  std::cout << "Selected a total of " << _flash_times.size() << " OpFlashes" << std::endl;
+  if (_debug) { std::cout << "Selected a total of " << _flash_times.size() << " OpFlashes" << std::endl; }
 
   // loop through reconstructed tracks
   size_t trk_ctr = 0;
@@ -305,16 +315,25 @@ void T0RecoAnodeCathodePiercing::produce(art::Event & e)
 
     // if the time does not match one from optical flashes -> don't reconstruct
     auto const& flash_match_result = FlashMatch(trkT);
+    // flash_match_result is std::pair
+    // 1st element is dt w.r.t. closest flash of light in PMTs
+    // 2nd element is index of PMT flash matched to
     if ( (flash_match_result.first > fTimeResA) && (anode == 1) )
       continue;
     if ( (flash_match_result.first > fTimeResC) && (anode == 0) )
       continue;
     
+    // some T0 reconstructed values mean that the track hits were truncated due
+    // to ADC waveform truncation. They can be identified by the distribution
+    // of reconstructed T0s
+    if ( (trkT > fT0negMin) && (trkT < fT0negMax) ) continue;
+    if ( (trkT > fT0posMin) && (trkT < fT0posMax) ) continue;
+
     // DON'T CREATE the t0 object unless the reconstructed t0 is some value other than 0
 
     if (trkT != 0.0) {
     // create T0 object with this information!
-    anab::T0 t0(trkT, 0, 0);
+    anab::T0 t0(trkT, 0, flash_match_result.first);
     
     T0_v->emplace_back(t0);
     util::CreateAssn(*this, e, *T0_v, track, *trk_t0_assn_v);

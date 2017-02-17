@@ -20,11 +20,14 @@
 
 // services etc...
 #include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // data-products
 #include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/AnalysisBase/T0.h"
 #include "lardataobj/AnalysisBase/CosmicTag.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/MCBase/MCTrack.h"
 #include "lardataobj/RecoBase/OpFlash.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -63,6 +66,8 @@ private:
   std::string fTrackProducer;
   std::string fT0Producer;
   std::string fFlashProducer;
+  std::string fCaloProducer;
+  std::string fHitProducer;
   std::string fCosmicTagProducer;
 
   bool        fUseMC;
@@ -74,6 +79,7 @@ private:
   // define top, bottom, front and back boundaries of TPC
   double _TOP, _BOTTOM, _FRONT, _BACK;
 
+  double fDriftVelocity;
 
   TTree* _tree;
   double _mc_time;
@@ -89,16 +95,23 @@ private:
   double _mc_y_start, _mc_y_end;
   double _mc_z_start, _mc_z_end;
   int    _matched;
-  int    _enter_top;
-  int    _enter_side;
-  int    _exit_bottom;
-  int    _exit_side;
-  int    _enter_anode;
-  int    _exit_anode;
+  int    _anode;
+  int    _cathode;
   int    _run, _subrun, _event;
 
   TTree* _mucs_tree;
   double _reco_time;
+
+  TTree* _calo_tree;
+  float _x, _y, _z;
+  float _x_corr;
+  float _px, _py, _pz;
+  float _dqds;
+  double _t0;
+
+  TTree* _2dhit_tree;
+  float _mag;
+  float _2d_adc;
 
   // functions to be used throughout module
   bool   TrackEntersTop     (const std::vector<TVector3>& sorted_trk);
@@ -124,6 +137,8 @@ T0RecoAnodeCathodePiercingAna::T0RecoAnodeCathodePiercingAna(fhicl::ParameterSet
   fTrackProducer     = p.get<std::string>("TrackProducer"    );
   fT0Producer        = p.get<std::string>("T0Producer"       );
   fFlashProducer     = p.get<std::string>("FlashProducer"    );
+  fCaloProducer      = p.get<std::string>("CaloProducer"     );
+  fHitProducer       = p.get<std::string>("HitProducer"      );
   fCosmicTagProducer = p.get<std::string>("CosmicTagProducer");
   fUseMC             = p.get<bool>       ("UseMC"            );
   fResolution        = p.get<double>     ("Resolution"       );
@@ -165,12 +180,8 @@ void T0RecoAnodeCathodePiercingAna::beginJob()
   _tree->Branch("_rc_y_end",&_rc_y_end,"rc_y_end/D");
   _tree->Branch("_rc_z_end",&_rc_z_end,"rc_z_end/D");
   // information on whether track enters/exits which sides
-  _tree->Branch("_enter_top",&_enter_top,"enter_top/I");
-  _tree->Branch("_enter_side",&_enter_side,"enter_side/I");
-  _tree->Branch("_exit_bottom",&_exit_bottom,"exit_bottom/I");
-  _tree->Branch("_exit_side",&_exit_side,"exit_side/I");
-  _tree->Branch("_enter_anode",&_enter_anode,"enter_anode/I");
-  _tree->Branch("_exit_anode",&_exit_anode,"exit_anode/I");
+  _tree->Branch("_anode"  ,&_anode  ,"anode/I"  );
+  _tree->Branch("_cathode",&_cathode,"cathode/I");
   _tree->Branch("_run",&_run,"run/I");
   _tree->Branch("_subrun",&_subrun,"subrun/I");
   _tree->Branch("_event",&_event,"event/I");
@@ -187,17 +198,43 @@ void T0RecoAnodeCathodePiercingAna::beginJob()
   _mucs_tree->Branch("_rc_x_end",&_rc_x_end,"rc_x_end/D");
   _mucs_tree->Branch("_rc_y_end",&_rc_y_end,"rc_y_end/D");
   _mucs_tree->Branch("_rc_z_end",&_rc_z_end,"rc_z_end/D");
-  _mucs_tree->Branch("_enter_top",&_enter_top,"enter_top/I");
-  _mucs_tree->Branch("_enter_side",&_enter_side,"enter_side/I");
-  _mucs_tree->Branch("_exit_bottom",&_exit_bottom,"exit_bottom/I");
-  _mucs_tree->Branch("_exit_side",&_exit_side,"exit_side/I");
-  _mucs_tree->Branch("_enter_anode",&_enter_anode,"enter_anode/I");
-  _mucs_tree->Branch("_exit_anode",&_exit_anode,"exit_anode/I");
+  _mucs_tree->Branch("_anode"  ,&_anode  ,"anode/I"  );
+  _mucs_tree->Branch("_cathode",&_cathode,"cathode/I");
   _mucs_tree->Branch("_run",&_run,"run/I");
   _mucs_tree->Branch("_subrun",&_subrun,"subrun/I");
   _mucs_tree->Branch("_event",&_event,"event/I");
 
+  _calo_tree = tfs->make<TTree>("_calo_tree","Track Calorimetry TTree");
+  _calo_tree->Branch("_x",&_x,"x/F");
+  _calo_tree->Branch("_x_corr",&_x_corr,"x_corr/F");
+  _calo_tree->Branch("_y",&_y,"y/F");
+  _calo_tree->Branch("_z",&_z,"z/F");
+  _calo_tree->Branch("_px",&_px,"px/F");
+  _calo_tree->Branch("_py",&_py,"py/F");
+  _calo_tree->Branch("_pz",&_pz,"pz/F");
+  _calo_tree->Branch("_t0",&_t0,"t0/D");
+  _calo_tree->Branch("_run",&_run,"run/I");
+  _calo_tree->Branch("_dqds",&_dqds,"dqds/F");
+
+  _2dhit_tree = tfs->make<TTree>("_2dhit_tree","2D Track Calorimetry TTree");
+  _2dhit_tree->Branch("_mag",&_mag,"mag/F"); // track length measured as distance from entering to exiting point
+  _2dhit_tree->Branch("_2d_adc",&_2d_adc,"2d_adc/F");
+  _2dhit_tree->Branch("_rc_x_start",&_rc_x_start,"rc_x_start/D");
+  _2dhit_tree->Branch("_rc_y_start",&_rc_y_start,"rc_y_start/D");
+  _2dhit_tree->Branch("_rc_z_start",&_rc_z_start,"rc_z_start/D");
+  _2dhit_tree->Branch("_rc_x_end",&_rc_x_end,"rc_x_end/D");
+  _2dhit_tree->Branch("_rc_y_end",&_rc_y_end,"rc_y_end/D");
+  _2dhit_tree->Branch("_rc_z_end",&_rc_z_end,"rc_z_end/D");
+  _2dhit_tree->Branch("_t0",&_t0,"t0/D");
+
   fResolution = 10; // cm
+
+  // Use '_detp' to find 'efield' and 'temp'
+  auto const* _detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  double efield = _detp -> Efield();
+  double temp   = _detp -> Temperature();
+  // Determine the drift velocity from 'efield' and 'temp'
+  fDriftVelocity = _detp -> DriftVelocity(efield,temp);
 
 }
 
@@ -238,6 +275,12 @@ void T0RecoAnodeCathodePiercingAna::analyze(art::Event const & e)
 
   // grab flashes associated with tracks
   art::FindMany<recob::OpFlash> trk_flash_assn_v(track_h, e, fFlashProducer );
+
+  // grab calorimetry associated with tracks
+  art::FindMany<anab::Calorimetry> trk_calo_assn_v(track_h, e, fCaloProducer );
+
+  // grab 2d hits associated with tracks
+  art::FindMany<recob::Hit> trk_hit_assn_v(track_h, e, fHitProducer);
 
   if (_debug)
     std::cout << "There are " << trk_flash_assn_v.size() << " track -> flash associations" << std::endl;
@@ -283,22 +326,20 @@ void T0RecoAnodeCathodePiercingAna::analyze(art::Event const & e)
       _rc_y_end   = bottom.Y();
       _rc_z_end   = bottom.Z();
       _length     = track.Length();
+      _mag = sqrt( ( (_rc_x_end - _rc_x_start) * (_rc_x_end - _rc_x_start) ) +
+		   ( (_rc_y_end - _rc_y_start) * (_rc_y_end - _rc_y_start) ) +
+		   ( (_rc_z_end - _rc_z_start) * (_rc_z_end - _rc_z_start) ) );
+      _px = (_rc_x_end - _rc_x_start) / _mag;
+      _py = (_rc_y_end - _rc_y_start) / _mag;
+      _pz = (_rc_z_end - _rc_z_start) / _mag;
 
-      _exit_bottom = _exit_side = _enter_top = _enter_side = _exit_anode = _enter_anode = 0;
+      _anode = _cathode = 0;
 
-      if (TrackExitsBottom(sorted_trk) == true)
-	_exit_bottom = 1;
-      if (TrackEntersSide(sorted_trk) == true)
-	_enter_side = 1;
-      if (TrackExitsSide(sorted_trk) == true)
-	_exit_side = 1;
-      if (TrackEntersTop(sorted_trk) == true)
-	_enter_top = 1;
-      if (TrackEntersAnode(sorted_trk) == true)
-	_enter_anode = 1;
-      if (TrackExitsAnode(sorted_trk) == true)
-	_exit_anode = 1;
-      
+      if ( (TrackExitsBottom(sorted_trk) == true) && (TrackEntersAnode(sorted_trk) == true)  ) { _anode = 1; _cathode = 0; }
+      if ( (TrackExitsBottom(sorted_trk) == true) && (TrackEntersAnode(sorted_trk) == false) ) { _anode = 0; _cathode = 1; }
+      if ( (TrackEntersTop(sorted_trk) == true)   && (TrackExitsAnode(sorted_trk) == true)   ) { _anode = 1; _cathode = 0; }
+      if ( (TrackEntersTop(sorted_trk) == true)   && (TrackExitsAnode(sorted_trk) == false)  ) { _anode = 0; _cathode = 1; }
+
       // reconstructed time comes from T0 object
       _rc_time = t0->Time();
 
@@ -348,7 +389,71 @@ void T0RecoAnodeCathodePiercingAna::analyze(art::Event const & e)
       if (CosmicTag_v.size() == 1){
 	_reco_time = _rc_time;
 	_mucs_tree->Fill();
-      }
+      }// if there is a cosmic tag
+
+      
+      // fill calorimetry info for this track
+      // grab the associated calorimetry object
+      const std::vector<const anab::Calorimetry*>& Calo_v = trk_calo_assn_v.at(i);
+
+      //std::cout << "There are " << Calo_v.size() << " Calorimetry objects associated with track" << i << std::endl;
+
+      for (size_t pl=0; pl < Calo_v.size(); pl++){
+	
+	auto const& calo = Calo_v.at(pl);
+	
+	auto const& plane = calo->PlaneID().Plane;
+
+	if (plane == 2){
+	  
+	  _t0 = _rc_time;
+
+	  //std::cout << "Plane ID is " << plane << std::endl;
+	  
+	  // grab point-by-point information
+	  auto const& dqdx_v = calo->dQdx();
+	  auto const& xyz_v = calo->XYZ();
+
+	  if (dqdx_v.size() != xyz_v.size()){
+	    std::cout << "dQdx and XYZ vectors diagreee in size! skip track..." << std::endl;
+	    continue;
+	  }
+
+	  for (size_t n=0; n < dqdx_v.size(); n++){
+
+	    _dqds = dqdx_v[n];
+	    _x = xyz_v[n].X();
+	    _y = xyz_v[n].Y();
+	    _z = xyz_v[n].Z();
+	    _x_corr = _x - (_t0 * fDriftVelocity);
+
+	    _calo_tree->Fill();
+	    
+	  }// for all calorimetry info
+
+	}// if collection plane
+	
+      }// for all planes
+
+
+      // fill 2dhit info for this track
+      // grab the associated 2d hit object
+      const std::vector<const recob::Hit*>& Hit_v = trk_hit_assn_v.at(i);
+
+      _2d_adc = 0;
+
+      for (size_t h=0; h < Hit_v.size(); h++){
+	
+	auto const& hit = Hit_v.at(h);
+	
+	if (hit->View() != geo::_plane_proj::kW) continue;
+	
+	_2d_adc += hit->Integral();
+	
+      }// for all hits	
+
+      _2dhit_tree->Fill();
+      
     } // if there is a reconstructed T0
     
   } // for all reconstructed tracks
