@@ -12,6 +12,12 @@ microboone_pandora:
   UseHitWidths:          true
   BuildTracks:           true
   BuildShowers:          true
+  ShowerEnergy: {
+      UseArea:           true
+      Recombination: {
+         Model:          ModBox
+      }
+  }
 }
 
 microboone_pandoracosmic:   @local::microboone_pandora
