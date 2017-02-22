@@ -21,7 +21,7 @@ physics.producers.saturation.HGProducerCosmic: "mixer"
 #physics.producers.digitfilter.FFTAlg.TransformViewVec:              [true,false,false]
 #physics.producers.digitfilter.FFTAlg.ZigZagCorrectVec:              [true,true,false]
 
-services.SignalShapingServiceMicroBooNE.FieldResponseFVersion: [ "v3.10", "v3.10"]
+services.SignalShapingServiceMicroBooNE.FieldResponseFVersion: [ "v3.11", "v3.11"]
 services.SignalShapingServiceMicroBooNE.YZdependentResponse: true
 services.SignalShapingServiceMicroBooNE.datadrivenResponse: true
 services.SignalShapingServiceMicroBooNE.DefaultEField: 0.273
