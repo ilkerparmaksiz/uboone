@@ -2,7 +2,7 @@
 
 # Enable data-driven field response.
 
-services.SignalShapingServiceMicroBooNE.FieldResponseFVersion: [ "v3.10", "v3.10"]
+services.SignalShapingServiceMicroBooNE.FieldResponseFVersion: [ "v3.11", "v3.11"]
 services.SignalShapingServiceMicroBooNE.YZdependentResponse: true
 services.SignalShapingServiceMicroBooNE.datadrivenResponse: true
 services.SignalShapingServiceMicroBooNE.DefaultEField: 0.273
