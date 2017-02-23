@@ -1529,10 +1529,13 @@ namespace microboone {
 	if (!pBranch) {
 	  pTree->Branch(name.c_str(), &data);
 	  // ROOT needs a TClass definition for T in order to create a branch,
-	  // se we are sure that at this point the TClass exists
+	  // se we are sure that at this point the TClass exists;
+	  // well, except for when it does not.
 	  LOG_DEBUG("AnalysisTreeStructure")
 	    << "Creating object branch '" << name
-	    << " with " << TClass::GetClass(typeid(T))->ClassName();
+	    << "' with "
+	    << (TClass::GetClass(typeid(T))? TClass::GetClass(typeid(T))->ClassName(): "some")
+	    << " data type";
 	}
 	else if
 	  (*(reinterpret_cast<std::vector<T>**>(pBranch->GetAddress())) != &data)
