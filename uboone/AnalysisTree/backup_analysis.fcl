@@ -2,8 +2,8 @@ BEGIN_PROLOG
 
 microboone_coherentpionana:
 {
-module_type: 	     "CoherentPionAna"
-GenieGenModuleLabel: "generator"
+module_type: 	     "CoherentPionAnaCosmic"
+CorsikaGenModuleLabel: "generator"
 G4ModuleLabel:       "largeant"
 LArGeantModuleLabel: "largeant"
 MCShowerModuleLabel: "mcreco"
