@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<!-- Production Project -->
+
+<!DOCTYPE project [
+<!ENTITY release      "v06_26_00" >
+<!ENTITY file_type    "mc"        >
+<!ENTITY run_type     "physics"   >
+<!ENTITY name         "vertex_run1">
+<!ENTITY version      "v06" >
+<!ENTITY tag          "datatest">
+<!ENTITY workfiles    "/uboone/app/users/ilker228/v06_26_00/Grid">
+<!ENTITY path         "/pnfs/uboone/scratch/users/ilker228/">
+]>
+
+
+<project name="&name;">
+
+  <!-- Project size -->
+  <numevents>-1</numevents>
+
+
+  <!-- Operating System -->
+  <os>SL6</os>
+
+  <!-- Larsoft information -->
+  <larsoft>
+    <tag>&release;</tag>
+    <qual>e10:prof</qual>
+    <local>&path;/local.tar</local>
+  </larsoft>
+    
+  <!-- Batch resources -->
+  <resource>DEDICATED,OPPORTUNISTIC</resource>  
+  
+  <!-- Project stages -->
+
+  <stage name="ccpionana">
+    <inputdef>prodgenie_bnb_nu_uboone_mcc8_detsim_run1</inputdef>
+   <!--inputlist>&workfiles;/files.list</inputlist-->
+    <fcl>&workfiles;/coherentpion_ana.fcl</fcl>
+    <outdir>&path;&name;/out</outdir>
+    <logdir>&path;&name;/log</logdir>
+    <workdir>&path;&name;/work</workdir>
+    <bookdir>/uboone/data/users/ilker228/book</bookdir>
+    <numjobs>1000</numjobs>
+    <maxfilesperjob>51</maxfilesperjob>
+    <memory>4000</memory>
+    <disk>60GB</disk>
+    <schema>root</schema>
+    <datatier>detector-simulated</datatier>
+    <defname>&name;_&version;</defname>
+    <jobsub>--expected-lifetime=long</jobsub>
+
+  </stage>
+
+  <!-- file type -->
+  <filetype>&file_type;</filetype>
+
+  <!-- run type --> 
+  <runtype>&run_type;</runtype>
+
+</project>
